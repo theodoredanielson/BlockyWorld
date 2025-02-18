@@ -71,7 +71,7 @@ function initTriangleBuffers() {
   // bind buffer and set data
   gl.bindBuffer(gl.ARRAY_BUFFER, g_vertexBuffer);
   // gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.DYNAMIC_DRAW);
-  
+
   const bufferStatus = gl.getError();
   if (bufferStatus !== gl.NO_ERROR) {
     console.error('WebGL error after buffer operations:', bufferStatus);
@@ -86,10 +86,10 @@ function initTriangleBuffers() {
     console.error('WebGL error after attribute setup:', attribStatus);
     return -1;
   }
-  }
+}
 
 function drawTriangle3D(vertices) {
-  var n = vertices.length/3;
+  var n = vertices.length / 3;
 
   if (g_vertexBuffer == null) {
     initTriangleBuffers();
@@ -99,7 +99,7 @@ function drawTriangle3D(vertices) {
 
   // draw triangle
   gl.drawArrays(gl.TRIANGLES, 0, n);
-  
+
   const drawStatus = gl.getError();
   if (drawStatus !== gl.NO_ERROR) {
     console.error('WebGL error after drawing:', drawStatus);

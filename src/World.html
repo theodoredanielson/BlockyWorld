@@ -18,96 +18,102 @@ Notes to Grader:
 
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <title>Change a Point Color</title>
-    <style>
-      body {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: flex-start; /* Aligns content from the top */
-        height: 100vh;
-        scroll-margin-bottom: 20px;
-      }
 
-      canvas {
-        display: block;
-        margin-top: 20px; /* Adds space at the top so it is not cut off */
-      }
+<head>
+  <meta charset="utf-8" />
+  <title>Change a Point Color</title>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      /* Aligns content from the top */
+      height: 100vh;
+      scroll-margin-bottom: 20px;
+    }
 
-      p, pre {
-        line-height: 1.2; /* Reduces vertical spacing between lines */
-        margin: 15px;
-        margin-bottom: 10px; 
-        align-items: center;
-        justify-content: flex-start;   /* Reduces vertical margin between elements */
-      }
+    canvas {
+      display: block;
+      margin-top: 20px;
+      /* Adds space at the top so it is not cut off */
+    }
 
-      button {
-        margin-top: 20px;
-        font-size: 20px;    /* Reduces vertical margin between elements */
-      }
+    p,
+    pre {
+      line-height: 1.2;
+      /* Reduces vertical spacing between lines */
+      margin: 15px;
+      margin-bottom: 10px;
+      align-items: center;
+      justify-content: flex-start;
+      /* Reduces vertical margin between elements */
+    }
 
-      ul {
-        margin-bottom: 30px;    /* Reduces vertical margin between elements */
-      }
+    button {
+      margin-top: 20px;
+      font-size: 20px;
+      /* Reduces vertical margin between elements */
+    }
 
-      #mapOutput {
-        line-height: 1;  
-        font-size: 12px;  
-        margin: 5px 0;   
-        padding: 5px;     
-      }
+    ul {
+      margin-bottom: 30px;
+      /* Reduces vertical margin between elements */
+    }
 
+    #mapOutput {
+      line-height: 1;
+      font-size: 12px;
+      margin: 5px 0;
+      padding: 5px;
+    }
+  </style>
+</head>
 
+<body onload="main()">
 
-    </style>
-  </head>
+  <!-- Canvas element for WebGL rendering -->
+  <canvas id="webgl" width="500" height="500">
+    Please use a browser that supports "canvas"
+  </canvas>
+  <p><b>Dev Info:</b></p>
+  <p id="numdot">XXX </p>
+  <p><b>YOUR GOAL:</b> TRAVERSE THE MAZE TO FIND THE ROACH</p>
+  <p><b>Note:</b> You may fly, but you may NOT fly over the walls! Don't event try it... </p>
+  <p><b>Note on the Note:</b> You actually should try, I added anti-cheating methods to block it.</p>
+  <p><b>Wanna be a quitter? That's fine. No shame. Click the button below.</b></p>
 
-  <body onload="main()">
+  <button id="quitButton">I Quit</button>
+  <pre id="mapOutput"></pre>
 
-    <!-- Canvas element for WebGL rendering -->
-    <canvas id="webgl" width="500" height="500">
-      Please use a browser that supports "canvas"
-    </canvas>
-    <p><b>Dev Info:</b></p>
-    <p id="numdot">XXX </p>
-    <p><b>YOUR GOAL:</b> TRAVERSE THE MAZE TO FIND THE ROACH</p>
-    <p><b>Note:</b> You may fly, but you may NOT fly over the walls! Don't event try it... </p>
-    <p><b>Note on the Note:</b> You actually should try, I added anti-cheating methods to block it.</p>
-    <p><b>Wanna be a quitter? That's fine. No shame. Click the button below.</b></p>
+  <!-- UI elements for user interaction -->
 
-     <button id="quitButton">I Quit</button>
-    <pre id="mapOutput"></pre>
+  <p><b>Controls:</b></p>
+  <p><u>Rotation:</u></p>
+  <li>Click Canvas [Initiates Pointer Lock]</li>
+  <li>Move Mouse to Rotate</li>
+  <li>Tab or Esc [Ends Pointer Lock]</li>
+  <p><u>Block Placement:</u></p>
+  <li>Shift + Click to Place Block</li>
+  <li>Ctrl + Click to Remove Block</li>
+  <p><u>Movement:</u></p>
+  <li>Forward: W or Arrow Up</li>
+  <li>Backward: S or Arrow Down</li>
+  <li>Left: A or Arrow Left</li>
+  <li>Right: D or Arrow Right</li>
+  </p>
+  <pre id="mapOtput"></pre>
+  <script src="../lib/cuon-matrix-cse160.js"></script>
+  <script src="../lib/webgl-debug.js"></script>
+  <script src="../lib/cuon-utils.js"></script>
+  <script src="Cube.js"></script>
+  <script src="StaticVariables.js"></script>
+  <script src="Render.js"></script>
+  <script src="Triangle.js"></script>
+  <script src="Sphere.js"></script>
+  <script src="Poke.js"></script>
+  <script src="Camera.js"></script>
+  <script src="World.js"></script>
+</body>
 
-    <!-- UI elements for user interaction -->
-    
-    <p><b>Controls:</b></p>
-    <p><u>Rotation:</u></p>
-    <li>Click Canvas [Initiates Pointer Lock]</li>
-    <li>Move Mouse to Rotate</li>
-    <li>Tab or Esc [Ends Pointer Lock]</li>
-    <p><u>Block Placement:</u></p>
-    <li>Shift + Click to Place Block</li>
-    <li>Ctrl + Click to Remove Block</li>
-    <p><u>Movement:</u></p>
-    <li>Forward: W or Arrow Up</li>
-    <li>Backward: S or Arrow Down</li>
-    <li>Left: A or Arrow Left</li>
-    <li>Right: D or Arrow Right</li>
-    </p>
-    <pre id="mapOtput"></pre>
-    <script src="../lib/cuon-matrix-cse160.js"></script>
-    <script src="../lib/webgl-debug.js"></script>
-    <script src="../lib/cuon-utils.js"></script>
-    <script src="Cube.js"></script>
-    <script src="StaticVariables.js"></script>
-    <script src="Render.js"></script>
-    <script src="Triangle.js"></script>
-    <script src="Sphere.js"></script>
-    <script src="Poke.js"></script>
-    <script src="Camera.js"></script>
-    <script src="World.js"></script>
-  </body>
 </html>

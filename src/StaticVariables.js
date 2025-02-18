@@ -1,14 +1,14 @@
 var globalRotMat = new Matrix4(); // global rotation matrix
 
-var bodyCube  = new Cube(); // body cube
-var headCube  = new Cube(); // head cube
+var bodyCube = new Cube(); // body cube
+var headCube = new Cube(); // head cube
 var mouthCube = new Cube(); // mouth cube
 
-var crissCube   = new Cube(); // criss cube
-var crossCube   = new Cube(); // cross cube
-var crissCube2  = new Cube(); // second criss cube
-var crossCube2  = new Cube(); // second cross cube
-var tongueCube  = new Cube(); // tongue cube
+var crissCube = new Cube(); // criss cube
+var crossCube = new Cube(); // cross cube
+var crissCube2 = new Cube(); // second criss cube
+var crossCube2 = new Cube(); // second cross cube
+var tongueCube = new Cube(); // tongue cube
 
 var sphereMat1 = new Matrix4(); // first sphere matrix
 var sphereMat2 = new Matrix4(); // second sphere matrix
@@ -16,14 +16,14 @@ var sphereMat2 = new Matrix4(); // second sphere matrix
 var antenna1 = new Cube(); // first antenna cube
 var antenna2 = new Cube(); // second antenna cube
 
-var upperLeg   = new Cube(); // upper leg 1 cube
-var lowerLeg   = new Cube(); // lower leg 1 cube
-var foot       = new Cube(); // foot 1 cube
-var kneeJoint  = new Matrix4(); // knee joint 1 matrix
+var upperLeg = new Cube(); // upper leg 1 cube
+var lowerLeg = new Cube(); // lower leg 1 cube
+var foot = new Cube(); // foot 1 cube
+var kneeJoint = new Matrix4(); // knee joint 1 matrix
 
-var upperLegR  = new Cube(); // upper leg R1 cube
-var lowerLegR  = new Cube(); // lower leg R1 cube
-var footR      = new Cube(); // foot R1 cube
+var upperLegR = new Cube(); // upper leg R1 cube
+var lowerLegR = new Cube(); // lower leg R1 cube
+var footR = new Cube(); // foot R1 cube
 var kneeJointR = new Matrix4(); // knee joint R1 matrix
 
 var bodyTransform = new Matrix4(); // body transform matrix
@@ -54,51 +54,50 @@ function initStaticTransforms() {
     sky.matrix.scale(100, 0, 100);
     sky.matrix.translate(-.5, 0, -.5);
 
-    ground.color = [127/255,105/255,80/255, 1.0];
+    ground.color = [127 / 255, 105 / 255, 80 / 255, 1.0];
     ground.textureNum = -2;
     ground.matrix.translate(0, -0.75, 0);
     ground.matrix.scale(100, 0, 100);
     ground.matrix.translate(-.5, 0, -.5);
 
-    horizon_1.color = [141/255,216/255,248/255, 1.0];
+    horizon_1.color = [141 / 255, 216 / 255, 248 / 255, 1.0];
     horizon_1.textureNum = -2;
     horizon_1.matrix.translate(0, -20, 50);
     horizon_1.matrix.scale(100, 30.75, 0);
     horizon_1.matrix.translate(-.5, 0, -.5);
 
-    horizon_2.color = [141/255,216/255,248/255, 1.0];
+    horizon_2.color = [141 / 255, 216 / 255, 248 / 255, 1.0];
     horizon_2.textureNum = -2;
     horizon_2.matrix.translate(0, -20, -50);
     horizon_2.matrix.scale(100, 30.75, 0);
     horizon_2.matrix.translate(-.5, 0, -.5);
 
-    horizon_3.color = [141/255,216/255,248/255, 1.0];
+    horizon_3.color = [141 / 255, 216 / 255, 248 / 255, 1.0];
     horizon_3.textureNum = -2;
     horizon_3.matrix.translate(50, -20, 0);
     horizon_3.matrix.scale(0, 30.75, 100);
     horizon_3.matrix.translate(-.5, 0, -.5);
 
-    horizon_4.color = [141/255,216/255,248/255, 1.0];
+    horizon_4.color = [141 / 255, 216 / 255, 248 / 255, 1.0];
     horizon_4.textureNum = -2;
     horizon_4.matrix.translate(-50, -20, 0);
     horizon_4.matrix.scale(0, 30.75, 100);
     horizon_4.matrix.translate(-.5, 0, -.5);
-    // horizon_4.matrix.translate(-.5, 0, -.5);
 
     bodyTransform.setIdentity(); // initialize body transform
     bodyTransform.translate(-0.25, 0, 0.0)
-                             .rotate(5, 1, 0, 0)
-                             .scale(0.5, 0.3, 0.5);
+        .rotate(5, 1, 0, 0)
+        .scale(0.5, 0.3, 0.5);
 
     headTransform.setIdentity(); // initialize head transform
     headTransform.translate(-0.2, 0.025, -0.18)
-                             .rotate(0, 1, 0, 0)
-                             .scale(0.4, 0.2, 0.2);
+        .rotate(0, 1, 0, 0)
+        .scale(0.4, 0.2, 0.2);
 
     mouthTransform.setIdentity(); // initialize mouth transform
     mouthTransform.translate(-0.1, 0.05, -0.2)
-                                .rotate(0, 1, 0, 0)
-                                .scale(0.2, 0.02, 0.1);
+        .rotate(0, 1, 0, 0)
+        .scale(0.2, 0.02, 0.1);
 
     leftLeg1Base.setIdentity(); // initialize left leg 1 base
     leftLeg1Base.setTranslate(-0.2, 0.06, 0.05);
