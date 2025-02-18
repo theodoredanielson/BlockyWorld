@@ -3,18 +3,20 @@ AUTHOR: Teddy Danielson
 EMAIL: tddaniel@ucsc.edu
 
 Notes to Grader:
-  - Earlier steps of the assignment are commented out but preserved to show progression.
-  - Collaboration: I worked with Sam Morrow. We would discuss videos and follow them along together.
-  - Used ChatGPT to clarify concepts related to sphere creation.
-  - GitHub Copilot occasionally auto-completed parts of this file, but those suggestions were revised as needed.
-  - Had ChatGPT format and add comments to some of my code, but that sometimes resulted in broken code—so I had to fix those manually.
-  - I implemented a cockroach using hierarchical transformations and multiple cubes.
-  - Non-cube primitive: SPHERE
-  - poke() kills the cockroach, triggering a special animation sequence.
-  - Sliders allow control over joint angles for realistic movement.
-  - Animation is implemented for leg movement, and a toggle button allows turning it on and off.
-  - Mouse control enables interactive rotation of the cockroach.
-  - Performance optimization ensures at least 10 FPS with an on-screen FPS counter. -->
+  - Collaboration: I worked with Sam Morrow. We discussed concepts, followed along with resources, and debugged together.
+  - Used ChatGPT for help in understanding texture mapping, camera movement, and collision handling.
+  - GitHub Copilot occasionally suggested auto-completions, but those were reviewed and modified as necessary.
+  - Had ChatGPT format and comment parts of my code as well as write my README, but I had to manually debug and refine those sections when issues arose.
+  - Implemented a **32x32 world** using procedural map generation and texture-based walls.
+  - Cockroach AI & Animation: When approached, it triggers an animation and locks player movement.
+  - Block Placement Feature: Allows players to place/remove blocks **except on existing walls**.
+  - Sliding Collision System: Allows camera movement to slide along **walls and up surfaces**.
+  - Mouse-Look Camera: Uses **pointer lock** for first-person controls and enables **free look**.
+  - Performance Optimization: Improved WebGL buffer handling, ensuring 10+ FPS with a full 32x32 map.
+  - "I Quit" Button: Prints the current world map state for debugging.
+  - Win Condition: Display message `"YOU WIN! REFRESH TO PLAY AGAIN"` upon successful completion.
+  - Cheating Condition: If the user floats above the maze walls, a red `"CHEATER!"` message appears at the top of the screen and the game becomes unplayable.
+-->
 
 <!DOCTYPE html>
 <html lang="en">

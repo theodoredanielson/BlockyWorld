@@ -1,167 +1,175 @@
+// triangle class definition
 class Triangle {
   constructor() {
-    this.type = 'triangle';
-    this.position = [0.0, 0.0, 0.0];
-    this.color = [1.0, 1.0, 1.0, 1.0];
-    this.size = 5.0;
-    this.rotation = 0;
+    this.type = 'triangle'; // type of shape
+    this.position = [0.0, 0.0, 0.0]; // initial position
+    this.color = [1.0, 1.0, 1.0, 1.0]; // color with alpha
+    this.size = 5.0; // size of the triangle
+    this.rotation = 0; // rotation angle
   }
 
+  // render the triangle
   render() {
-    var xy = this.position;
-    var rgba = this.color;
-    var size = this.size;
-    const angle = this.rotation;
+    var xy = this.position; // get position
+    var rgba = this.color; // get color
+    var size = this.size; // get size
+    const angle = this.rotation; // get rotation angle
 
     // set color and size
     gl.uniform4f(u_FragColor, rgba[0], rgba[1], rgba[2], rgba[3]);
     gl.uniform1f(u_Size, size);
 
-    var d = this.size / 200.0;
+    var d = this.size / 200.0; // calculate dimension
     // draw triangle
     drawTriangle([xy[0], xy[1], xy[0] + d, xy[1], xy[0], xy[1] + d], xy, angle);
   }
 }
 
+// function to draw a triangle
 function drawTriangle(vertices) {
-  var n = 3;
+  var n = 3; // number of vertices
 
   // rotate vertices
-  const cosTheta = Math.cos(angle);
-  const sinTheta = Math.sin(angle);
+  const cosTheta = Math.cos(angle); // calculate cosine
+  const sinTheta = Math.sin(angle); // calculate sine
   for (let i = 0; i < vertices.length; i += 2) {
-    const x = vertices[i] - center[0];
-    const y = vertices[i + 1] - center[1];
+    const x = vertices[i] - center[0]; // translate x
+    const y = vertices[i + 1] - center[1]; // translate y
 
-    const rotatedX = x * cosTheta - y * sinTheta;
-    const rotatedY = x * sinTheta + y * cosTheta;
+    const rotatedX = x * cosTheta - y * sinTheta; // rotate x
+    const rotatedY = x * sinTheta + y * cosTheta; // rotate y
 
-    vertices[i] = rotatedX + center[0];
-    vertices[i + 1] = rotatedY + center[1];
+    vertices[i] = rotatedX + center[0]; // update x
+    vertices[i + 1] = rotatedY + center[1]; // update y
   }
 
   // create buffer
-  var vertexBuffer = gl.createBuffer();
+  var vertexBuffer = gl.createBuffer(); // create vertex buffer
   if (!vertexBuffer) {
-    console.log('failed to create the buffer object');
-    return -1;
+    console.log('failed to create the buffer object'); // log error
+    return -1; // return error
   }
 
   // bind buffer and set data
-  gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.DYNAMIC_DRAW);
-  gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0);
-  gl.enableVertexAttribArray(a_Position);
+  gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer); // bind buffer
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.DYNAMIC_DRAW); // set buffer data
+  gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0); // set attribute pointer
+  gl.enableVertexAttribArray(a_Position); // enable attribute
 
   // draw triangle
-  gl.drawArrays(gl.TRIANGLES, 0, n);
+  gl.drawArrays(gl.TRIANGLES, 0, n); // draw triangles
 
-  return n;
+  return n; // return number of vertices
 }
 
-
+// global vertex buffer
 var g_vertexBuffer = null;
+
+// function to initialize triangle buffers
 function initTriangleBuffers() {
-  g_vertexBuffer = gl.createBuffer();
+  g_vertexBuffer = gl.createBuffer(); // create vertex buffer
   if (!g_vertexBuffer) {
-    console.error('Failed to create vertex buffer');
-    return -1;
+    console.error('failed to create vertex buffer'); // log error
+    return -1; // return error
   }
 
   // bind buffer and set data
-  gl.bindBuffer(gl.ARRAY_BUFFER, g_vertexBuffer);
-  // gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.DYNAMIC_DRAW);
+  gl.bindBuffer(gl.ARRAY_BUFFER, g_vertexBuffer); // bind buffer
+  // gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.DYNAMIC_DRAW); // set buffer data
 
-  const bufferStatus = gl.getError();
+  const bufferStatus = gl.getError(); // check for errors
   if (bufferStatus !== gl.NO_ERROR) {
-    console.error('WebGL error after buffer operations:', bufferStatus);
-    return -1;
+    console.error('webgl error after buffer operations:', bufferStatus); // log error
+    return -1; // return error
   }
 
-  gl.vertexAttribPointer(a_Position, 3, gl.FLOAT, false, 0, 0);
-  gl.enableVertexAttribArray(a_Position);
+  gl.vertexAttribPointer(a_Position, 3, gl.FLOAT, false, 0, 0); // set attribute pointer
+  gl.enableVertexAttribArray(a_Position); // enable attribute
 
-  const attribStatus = gl.getError();
+  const attribStatus = gl.getError(); // check for errors
   if (attribStatus !== gl.NO_ERROR) {
-    console.error('WebGL error after attribute setup:', attribStatus);
-    return -1;
+    console.error('webgl error after attribute setup:', attribStatus); // log error
+    return -1; // return error
   }
 }
 
+// function to draw a 3d triangle
 function drawTriangle3D(vertices) {
-  var n = vertices.length / 3;
+  var n = vertices.length / 3; // number of vertices
 
   if (g_vertexBuffer == null) {
-    initTriangleBuffers();
+    initTriangleBuffers(); // initialize buffers
   }
 
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.DYNAMIC_DRAW);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.DYNAMIC_DRAW); // set buffer data
 
   // draw triangle
-  gl.drawArrays(gl.TRIANGLES, 0, n);
+  gl.drawArrays(gl.TRIANGLES, 0, n); // draw triangles
 
-  const drawStatus = gl.getError();
+  const drawStatus = gl.getError(); // check for errors
   if (drawStatus !== gl.NO_ERROR) {
-    console.error('WebGL error after drawing:', drawStatus);
-    return -1;
+    console.error('webgl error after drawing:', drawStatus); // log error
+    return -1; // return error
   }
 
-  // return n;
+  // return n; // return number of vertices
 }
 
-// Global buffers
-var g_vertexBufferUV = null;
-var g_uvBuffer = null;
+// global buffers
+var g_vertexBufferUV = null; // uv vertex buffer
+var g_uvBuffer = null; // uv buffer
 
+// function to initialize triangle buffers for uv
 function initTriangleBuffersUV() {
-  // Create vertex buffer if not already initialized
+  // create vertex buffer if not already initialized
   if (!g_vertexBufferUV) {
-    g_vertexBufferUV = gl.createBuffer();
+    g_vertexBufferUV = gl.createBuffer(); // create vertex buffer
     if (!g_vertexBufferUV) {
-      console.error("Failed to create vertex buffer");
-      return -1;
+      console.error("failed to create vertex buffer"); // log error
+      return -1; // return error
     }
   }
 
-  // Create UV buffer if not already initialized
+  // create uv buffer if not already initialized
   if (!g_uvBuffer) {
-    g_uvBuffer = gl.createBuffer();
+    g_uvBuffer = gl.createBuffer(); // create uv buffer
     if (!g_uvBuffer) {
-      console.error("Failed to create UV buffer");
-      return -1;
+      console.error("failed to create uv buffer"); // log error
+      return -1; // return error
     }
   }
 
-  return 0;
+  return 0; // return success
 }
 
+// function to draw a 3d triangle with uv
 function drawTriangle3DUV(vertices, uv) {
-  var n = vertices.length / 3;
+  var n = vertices.length / 3; // number of vertices
 
-  // Initialize buffers if not done already
+  // initialize buffers if not done already
   if (!g_vertexBufferUV || !g_uvBuffer) {
-    initTriangleBuffersUV();
+    initTriangleBuffersUV(); // initialize buffers
   }
 
-  // Bind vertex buffer and update data
-  gl.bindBuffer(gl.ARRAY_BUFFER, g_vertexBufferUV);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.DYNAMIC_DRAW);
-  gl.vertexAttribPointer(a_Position, 3, gl.FLOAT, false, 0, 0);
-  gl.enableVertexAttribArray(a_Position);
+  // bind vertex buffer and update data
+  gl.bindBuffer(gl.ARRAY_BUFFER, g_vertexBufferUV); // bind vertex buffer
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.DYNAMIC_DRAW); // set buffer data
+  gl.vertexAttribPointer(a_Position, 3, gl.FLOAT, false, 0, 0); // set attribute pointer
+  gl.enableVertexAttribArray(a_Position); // enable attribute
 
-  // Bind UV buffer and update data
-  gl.bindBuffer(gl.ARRAY_BUFFER, g_uvBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(uv), gl.DYNAMIC_DRAW);
-  gl.vertexAttribPointer(a_UV, 2, gl.FLOAT, false, 0, 0);
-  gl.enableVertexAttribArray(a_UV);
+  // bind uv buffer and update data
+  gl.bindBuffer(gl.ARRAY_BUFFER, g_uvBuffer); // bind uv buffer
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(uv), gl.DYNAMIC_DRAW); // set buffer data
+  gl.vertexAttribPointer(a_UV, 2, gl.FLOAT, false, 0, 0); // set attribute pointer
+  gl.enableVertexAttribArray(a_UV); // enable attribute
 
-  // Draw the triangle
-  gl.drawArrays(gl.TRIANGLES, 0, n);
+  // draw the triangle
+  gl.drawArrays(gl.TRIANGLES, 0, n); // draw triangles
 
-  // Cleanup: Disable attributes but do NOT delete buffers (reuse them)
-  gl.disableVertexAttribArray(a_Position);
-  gl.disableVertexAttribArray(a_UV);
-  gl.bindBuffer(gl.ARRAY_BUFFER, null);
+  // cleanup: disable attributes but do not delete buffers (reuse them)
+  gl.disableVertexAttribArray(a_Position); // disable position attribute
+  gl.disableVertexAttribArray(a_UV); // disable uv attribute
+  gl.bindBuffer(gl.ARRAY_BUFFER, null); // unbind buffer
 
-  return n;
+  return n; // return number of vertices
 }

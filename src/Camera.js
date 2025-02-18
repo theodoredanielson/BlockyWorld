@@ -1,32 +1,30 @@
-const COLLISION_RADIUS = 0.2;
-const GROUND_HEIGHT = -0.75;  // the floor level
-let gameOver = false;  // Initially false, set to true when the player "cheats"
-const sensitivity = 0.002; // Adjust for smoother or faster camera movement
-
+const COLLISION_RADIUS = 0.2; // the radius used for collision detection
+const GROUND_HEIGHT = -0.75; // the floor level
+let gameOver = false; // indicates if the game is over; initially false, set to true when the player "cheats"
+const sensitivity = 0.002; // sensitivity for smoother or faster camera movement
 
 class Camera {
     constructor() {
-        // 1) Basic attributes
-        this.fov = 60;
-        this.eye = new Vector3([0, 0, 2]);
-        this.at = new Vector3([0, 0, -1]);
-        this.up = new Vector3([0, 1, 0]);
-        this.yaw = 0;   // Horizontal rotation
-        this.pitch = 0; // Vertical tilt (clamped between -89 and 89 degrees)
+        // initialize basic attributes
+        this.fov = 60; // field of view
+        this.eye = new Vector3([0, 0, 2]); // camera position
+        this.at = new Vector3([0, 0, -1]); // point the camera is looking at
+        this.up = new Vector3([0, 1, 0]); // up direction for the camera
+        this.yaw = 0; // horizontal rotation
+        this.pitch = 0; // vertical tilt, clamped between -89 and 89 degrees
 
+        this.alwaysUp = new Vector3([0, 1, 0]); // constant up direction
 
-        this.alwaysUp = new Vector3([0, 1, 0]);
-
-        // 2) View matrix
+        // set the view matrix
         viewMatrix.setLookAt(
             this.eye.elements[0], this.eye.elements[1], this.eye.elements[2],
             this.at.elements[0], this.at.elements[1], this.at.elements[2],
             this.up.elements[0], this.up.elements[1], this.up.elements[2]
         );
-
     }
 
     updateViewMatrix() {
+        // update the view matrix based on current camera position and orientation
         viewMatrix.setLookAt(
             this.eye.elements[0], this.eye.elements[1], this.eye.elements[2],
             this.at.elements[0], this.at.elements[1], this.at.elements[2],
@@ -35,350 +33,343 @@ class Camera {
     }
 
     checkCollision(x, z, r) {
-        const GROUND_HEIGHT = 0;  // The lowest allowed y-value for the camera
-        let hitGround = false;
-        let hitWall = false;
+        const GROUND_HEIGHT = 0; // the lowest allowed y-value for the camera
+        let hitGround = false; // flag to indicate if the camera is below ground
+        let hitWall = false; // flag to indicate if the camera has hit a wall
 
-        // Check if the camera's Y value is below the ground
+        // check if the camera's Y value is below the ground
         if (this.eye.elements[1] < GROUND_HEIGHT) {
-            hitGround = true;
+            hitGround = true; // camera is below ground
         }
 
-        // Proceed to check wall collisions (x/z plane)
-        let centerTileX = Math.floor(x + 16);
-        let centerTileZ = Math.floor(z + 16);
+        // check for wall collisions in the x/z plane
+        let centerTileX = Math.floor(x + 16); // center tile in x direction
+        let centerTileZ = Math.floor(z + 16); // center tile in z direction
 
         for (let tileX = centerTileX - 1; tileX <= centerTileX + 1; tileX++) {
             for (let tileZ = centerTileZ - 1; tileZ <= centerTileZ + 1; tileZ++) {
+                // skip tiles that are out of bounds
                 if (tileX < 0 || tileX >= 32 || tileZ < 0 || tileZ >= 32) continue;
 
-                let height = g_map[tileX][tileZ];
+                let height = g_map[tileX][tileZ]; // get the height of the tile
                 if (height == '.') {
-                    height = 0;
+                    height = 0; // empty tile
                 } else if (height == '%') {
-                    height = 2;
+                    height = 2; // wall tile
                 } else if (height == '8') {
-                    height = 3;
+                    height = 3; // another type of wall tile
                 }
 
+                // check if the tile has height
                 if (height > 0) {
-                    let boxMinX = tileX - 16;
-                    let boxMinZ = tileZ - 16;
-                    let boxMaxX = boxMinX + 1;
-                    let boxMaxZ = boxMinZ + 1;
+                    let boxMinX = tileX - 16; // minimum x boundary of the tile
+                    let boxMinZ = tileZ - 16; // minimum z boundary of the tile
+                    let boxMaxX = boxMinX + 1; // maximum x boundary of the tile
+                    let boxMaxZ = boxMinZ + 1; // maximum z boundary of the tile
 
+                    // find the closest point on the tile to the camera
                     let closestX = this.clamp(x, boxMinX, boxMaxX);
                     let closestZ = this.clamp(z, boxMinZ, boxMaxZ);
 
-                    let distX = x - closestX;
-                    let distZ = z - closestZ;
-                    let distSq = distX * distX + distZ * distZ;
-                    let radiusSq = r * r;
+                    let distX = x - closestX; // distance in x direction
+                    let distZ = z - closestZ; // distance in z direction
+                    let distSq = distX * distX + distZ * distZ; // squared distance
+                    let radiusSq = r * r; // squared radius
 
+                    // check for collision
                     if (distSq < radiusSq) {
-                        hitWall = true;
+                        hitWall = true; // camera has hit a wall
                     }
                 }
             }
         }
 
-        return { hitWall, hitGround };
+        return { hitWall, hitGround }; // return collision results
     }
 
-    // Helper function to clamp values
+    // helper function to clamp values between min and max
     clamp(value, minVal, maxVal) {
-        return Math.max(minVal, Math.min(maxVal, value));
+        return Math.max(minVal, Math.min(maxVal, value)); // return clamped value
     }
 
     forward(speed = 0.2) {
-        const GROUND_HEIGHT = 0;
-        const COLLISION_RADIUS = 0.2;
+        const GROUND_HEIGHT = 0; // ground height for collision
+        const COLLISION_RADIUS = 0.2; // collision radius for movement
 
-        // 1) Save current position
+        // save current position
         let oldEye = new Vector3(this.eye.elements);
         let oldAt = new Vector3(this.at.elements);
 
-        // 2) Compute forward direction (from eye to at)
+        // compute forward direction (from eye to at)
         let direction = new Vector3();
         direction.set(this.at);
         direction.sub(this.eye);
-        direction.normalize();
-        direction.mul(speed);
+        direction.normalize(); // normalize the direction
+        direction.mul(speed); // scale by speed
 
-        // 3) Compute candidate new positions
+        // compute candidate new positions
         let tempEye = new Vector3(oldEye.elements);
         let tempAt = new Vector3(oldAt.elements);
 
-        tempEye.add(direction);
-        tempAt.add(direction);
+        tempEye.add(direction); // move eye position
+        tempAt.add(direction); // move at position
 
-        // Get collision results
+        // get collision results
         let { hitWall, hitGround } = this.checkCollision(tempEye.elements[0], tempEye.elements[2], COLLISION_RADIUS);
 
-        // 4) If the camera collides with the ground, only adjust `eye.y`, not `at.y`
+        // if the camera collides with the ground, only adjust `eye.y`, not `at.y`
         if (hitGround) {
-            tempEye.elements[1] = GROUND_HEIGHT;  // Keep the camera at ground level
-            tempAt.elements[1] = .9 * oldAt.elements[1];
+            tempEye.elements[1] = GROUND_HEIGHT; // keep the camera at ground level
+            tempAt.elements[1] = .9 * oldAt.elements[1]; // adjust at position slightly
         }
 
-        // 5) If there's no wall collision, apply full movement
+        // if there's no wall collision, apply full movement
         if (!hitWall) {
-            this.eye.set(tempEye);
-            this.at.set(tempAt);
+            this.eye.set(tempEye); // update eye position
+            this.at.set(tempAt); // update at position
         } else {
-            // 6) Handle sliding when hitting a wall
+            // handle sliding when hitting a wall
 
-            // (a) Try moving only along X (keeping Y and Z unchanged)
+            // try moving only along X (keeping Y and Z unchanged)
             let xOnlyEye = new Vector3(oldEye.elements);
             let xOnlyAt = new Vector3(oldAt.elements);
-            xOnlyEye.elements[0] += direction.elements[0];
-            xOnlyAt.elements[0] += direction.elements[0];
-            let xCollision = this.checkCollision(xOnlyEye.elements[0], xOnlyEye.elements[2], COLLISION_RADIUS).hitWall;
+            xOnlyEye.elements[0] += direction.elements[0]; // move in x direction
+            xOnlyAt.elements[0] += direction.elements[0]; // move at in x direction
+            let xCollision = this.checkCollision(xOnlyEye.elements[0], xOnlyEye.elements[2], COLLISION_RADIUS).hitWall; // check for collision
 
-            // (b) Try moving only along Z (keeping Y and X unchanged)
+            // try moving only along Z (keeping Y and X unchanged)
             let zOnlyEye = new Vector3(oldEye.elements);
             let zOnlyAt = new Vector3(oldAt.elements);
-            zOnlyEye.elements[2] += direction.elements[2];
-            zOnlyAt.elements[2] += direction.elements[2];
-            let zCollision = this.checkCollision(zOnlyEye.elements[0], zOnlyEye.elements[2], COLLISION_RADIUS).hitWall;
+            zOnlyEye.elements[2] += direction.elements[2]; // move in z direction
+            zOnlyAt.elements[2] += direction.elements[2]; // move at in z direction
+            let zCollision = this.checkCollision(zOnlyEye.elements[0], zOnlyEye.elements[2], COLLISION_RADIUS).hitWall; // check for collision
 
-            // 7) Decide movement based on collisions
+            // decide movement based on collisions
             if (!xCollision && zCollision) {
-                this.eye.set(xOnlyEye);
-                this.at.set(xOnlyAt);
+                this.eye.set(xOnlyEye); // move along x if no collision
+                this.at.set(xOnlyAt); // update at position
             } else if (xCollision && !zCollision) {
-                this.eye.set(zOnlyEye);
-                this.at.set(zOnlyAt);
+                this.eye.set(zOnlyEye); // move along z if no collision
+                this.at.set(zOnlyAt); // update at position
             }
         }
 
-        // 8) Finally, update the view matrix
+        // finally, update the view matrix
         this.updateViewMatrix();
     }
 
-
-
-
-
-    // moveBackwards()
+    // move backwards
     back(speed = 0.2) {
-        const GROUND_HEIGHT = 0;
-        const COLLISION_RADIUS = 0.2;
+        const GROUND_HEIGHT = 0; // ground height for collision
+        const COLLISION_RADIUS = 0.2; // collision radius for movement
 
-        // 1) Save current position
+        // save current position
         let oldEye = new Vector3(this.eye.elements);
         let oldAt = new Vector3(this.at.elements);
 
-        // 2) Compute backward direction = (eye - at)
+        // compute backward direction = (eye - at)
         let direction = new Vector3();
         direction.set(this.eye);
-        direction.sub(this.at);
-        direction.normalize();
-        direction.mul(speed);
+        direction.sub(this.at); // calculate direction
+        direction.normalize(); // normalize the direction
+        direction.mul(speed); // scale by speed
 
-        // 3) Compute candidate new positions
+        // compute candidate new positions
         let tempEye = new Vector3(oldEye.elements);
         let tempAt = new Vector3(oldAt.elements);
 
-        tempEye.add(direction);
-        tempAt.add(direction);
+        tempEye.add(direction); // move eye position
+        tempAt.add(direction); // move at position
 
-        // Get coallision results
+        // get collision results
         let { hitWall, hitGround } = this.checkCollision(tempEye.elements[0], tempEye.elements[2], COLLISION_RADIUS);
 
-        // 4) If the camera collides with the ground, only adjust `eye.y`, not `at.y`
+        // if the camera collides with the ground, only adjust `eye.y`, not `at.y`
         if (hitGround) {
-            tempEye.elements[1] = GROUND_HEIGHT;  // Keep the camera at ground level
+            tempEye.elements[1] = GROUND_HEIGHT; // keep the camera at ground level
         }
 
-        // 5) If there's no wall collision, apply full movement
+        // if there's no wall collision, apply full movement
         if (!hitWall) {
-            this.eye.set(tempEye);
-            this.at.set(tempAt);
+            this.eye.set(tempEye); // update eye position
+            this.at.set(tempAt); // update at position
         } else {
-            // 6) Handle sliding when hitting a wall
+            // handle sliding when hitting a wall
 
-            // (a) Try moving only along X (keeping Y and Z unchanged)
+            // try moving only along X (keeping Y and Z unchanged)
             let xOnlyEye = new Vector3(oldEye.elements);
             let xOnlyAt = new Vector3(oldAt.elements);
-            xOnlyEye.elements[0] += direction.elements[0];
-            xOnlyAt.elements[0] += direction.elements[0];
-            let xCollision = this.checkCollision(xOnlyEye.elements[0], xOnlyEye.elements[2], COLLISION_RADIUS).hitWall;
+            xOnlyEye.elements[0] += direction.elements[0]; // move in x direction
+            xOnlyAt.elements[0] += direction.elements[0]; // move at in x direction
+            let xCollision = this.checkCollision(xOnlyEye.elements[0], xOnlyEye.elements[2], COLLISION_RADIUS).hitWall; // check for collision
 
-            // (b) Try moving only along Z (keeping Y and X unchanged)
+            // try moving only along Z (keeping Y and X unchanged)
             let zOnlyEye = new Vector3(oldEye.elements);
             let zOnlyAt = new Vector3(oldAt.elements);
-            zOnlyEye.elements[2] += direction.elements[2];
-            zOnlyAt.elements[2] += direction.elements[2];
-            let zCollision = this.checkCollision(zOnlyEye.elements[0], zOnlyEye.elements[2], COLLISION_RADIUS).hitWall;
+            zOnlyEye.elements[2] += direction.elements[2]; // move in z direction
+            zOnlyAt.elements[2] += direction.elements[2]; // move at in z direction
+            let zCollision = this.checkCollision(zOnlyEye.elements[0], zOnlyEye.elements[2], COLLISION_RADIUS).hitWall; // check for collision
 
-            // 7) Decide movement based on collisions
+            // decide movement based on collisions
             if (!xCollision && zCollision) {
-                this.eye.set(xOnlyEye);
-                this.at.set(xOnlyAt);
+                this.eye.set(xOnlyEye); // move along x if no collision
+                this.at.set(xOnlyAt); // update at position
             } else if (xCollision && !zCollision) {
-                this.eye.set(zOnlyEye);
-                this.at.set(zOnlyAt);
+                this.eye.set(zOnlyEye); // move along z if no collision
+                this.at.set(zOnlyAt); // update at position
             }
         }
 
-        // 8) Finally, update the view matrix
+        // finally, update the view matrix
         this.updateViewMatrix();
     }
 
-
-
-
-    // moveLeft()
+    // move left
     left(speed = 0.2) {
-        const GROUND_HEIGHT = 0;
-        const COLLISION_RADIUS = 0.2;
+        const GROUND_HEIGHT = 0; // ground height for collision
+        const COLLISION_RADIUS = 0.2; // collision radius for movement
 
-        // 1) Save old position
+        // save old position
         let oldEye = new Vector3(this.eye.elements);
         let oldAt = new Vector3(this.at.elements);
 
-        // 2) Compute "left" direction
+        // compute "left" direction
         // forward = at - eye
         let forward = new Vector3();
         forward.set(this.at);
-        forward.sub(this.eye);
+        forward.sub(this.eye); // calculate forward direction
 
         // side = up x forward => "left" direction
-        let direction = Vector3.cross(this.up, forward);
-        direction.normalize();
-        direction.mul(speed);
+        let direction = Vector3.cross(this.up, forward); // calculate left direction
+        direction.normalize(); // normalize the direction
+        direction.mul(speed); // scale by speed
 
-        // 3) Potential new positions
+        // potential new positions
         let tempEye = new Vector3(oldEye.elements);
         let tempAt = new Vector3(oldAt.elements);
-        tempEye.add(direction);
-        tempAt.add(direction);
+        tempEye.add(direction); // move eye position
+        tempAt.add(direction); // move at position
 
-        // 4) Collision check
+        // collision check
         let { hitWall, hitGround } = this.checkCollision(tempEye.elements[0], tempEye.elements[2], COLLISION_RADIUS);
 
-        // 5) If the camera collides with the ground, only adjust `eye.y`, not `at.y`
+        // if the camera collides with the ground, only adjust `eye.y`, not `at.y`
         if (hitGround) {
-            tempEye.elements[1] = GROUND_HEIGHT;  // Keep the camera at ground level
+            tempEye.elements[1] = GROUND_HEIGHT; // keep the camera at ground level
         }
 
-        // 6) If there's no wall collision, apply full movement
+        // if there's no wall collision, apply full movement
         if (!hitWall) {
-            this.eye.set(tempEye);
-            this.at.set(tempAt);
+            this.eye.set(tempEye); // update eye position
+            this.at.set(tempAt); // update at position
         } else {
-            // 7) Handle sliding when hitting a wall
+            // handle sliding when hitting a wall
 
-            // (a) Try moving only along X (keeping Y and Z unchanged)
+            // try moving only along X (keeping Y and Z unchanged)
             let xOnlyEye = new Vector3(oldEye.elements);
             let xOnlyAt = new Vector3(oldAt.elements);
-            xOnlyEye.elements[0] += direction.elements[0];
-            xOnlyAt.elements[0] += direction.elements[0];
-            let xCollision = this.checkCollision(xOnlyEye.elements[0], xOnlyEye.elements[2], COLLISION_RADIUS).hitWall;
+            xOnlyEye.elements[0] += direction.elements[0]; // move in x direction
+            xOnlyAt.elements[0] += direction.elements[0]; // move at in x direction
+            let xCollision = this.checkCollision(xOnlyEye.elements[0], xOnlyEye.elements[2], COLLISION_RADIUS).hitWall; // check for collision
 
-            // (b) Try moving only along Z (keeping Y and X unchanged)
+            // try moving only along Z (keeping Y and X unchanged)
             let zOnlyEye = new Vector3(oldEye.elements);
             let zOnlyAt = new Vector3(oldAt.elements);
-            zOnlyEye.elements[2] += direction.elements[2];
-            zOnlyAt.elements[2] += direction.elements[2];
-            let zCollision = this.checkCollision(zOnlyEye.elements[0], zOnlyEye.elements[2], COLLISION_RADIUS).hitWall;
+            zOnlyEye.elements[2] += direction.elements[2]; // move in z direction
+            zOnlyAt.elements[2] += direction.elements[2]; // move at in z direction
+            let zCollision = this.checkCollision(zOnlyEye.elements[0], zOnlyEye.elements[2], COLLISION_RADIUS).hitWall; // check for collision
 
-            // 8) Decide movement based on collisions
+            // decide movement based on collisions
             if (!xCollision && zCollision) {
-                this.eye.set(xOnlyEye);
-                this.at.set(xOnlyAt);
+                this.eye.set(xOnlyEye); // move along x if no collision
+                this.at.set(xOnlyAt); // update at position
             } else if (xCollision && !zCollision) {
-                this.eye.set(zOnlyEye);
-                this.at.set(zOnlyAt);
+                this.eye.set(zOnlyEye); // move along z if no collision
+                this.at.set(zOnlyAt); // update at position
             }
         }
 
-        // 9) Finally, update view
+        // finally, update the view matrix
         this.updateViewMatrix();
     }
 
-
-
-    // moveRight()
+    // move right
     right(speed = 0.2) {
-        const GROUND_HEIGHT = 0;
-        const COLLISION_RADIUS = 0.2;
+        const GROUND_HEIGHT = 0; // ground height for collision
+        const COLLISION_RADIUS = 0.2; // collision radius for movement
 
-        // 1) Save old position
+        // save old position
         let oldEye = new Vector3(this.eye.elements);
         let oldAt = new Vector3(this.at.elements);
 
-        // 2) Compute "right" direction
+        // compute "right" direction
         // forward = at - eye
         let forward = new Vector3();
         forward.set(this.at);
-        forward.sub(this.eye);
+        forward.sub(this.eye); // calculate forward direction
 
         // side = forward x up => "right" direction
-        let direction = Vector3.cross(forward, this.up);
-        direction.normalize();
-        direction.mul(speed);
+        let direction = Vector3.cross(forward, this.up); // calculate right direction
+        direction.normalize(); // normalize the direction
+        direction.mul(speed); // scale by speed
 
-        // 3) Compute potential new positions
+        // compute potential new positions
         let tempEye = new Vector3(oldEye.elements);
         let tempAt = new Vector3(oldAt.elements);
-        tempEye.add(direction);
-        tempAt.add(direction);
+        tempEye.add(direction); // move eye position
+        tempAt.add(direction); // move at position
 
-        // 4) Check for collisions
+        // check for collisions
         let { hitWall, hitGround } = this.checkCollision(tempEye.elements[0], tempEye.elements[2], COLLISION_RADIUS);
 
-        // 5) If the camera collides with the ground, only adjust `eye.y`, not `at.y`
+        // if the camera collides with the ground, only adjust `eye.y`, not `at.y`
         if (hitGround) {
-            tempEye.elements[1] = GROUND_HEIGHT;  // Keep the camera at ground level
+            tempEye.elements[1] = GROUND_HEIGHT; // keep the camera at ground level
         }
 
-        // 6) If there's no wall collision, apply full movement
+        // if there's no wall collision, apply full movement
         if (!hitWall) {
-            this.eye.set(tempEye);
-            this.at.set(tempAt);
+            this.eye.set(tempEye); // update eye position
+            this.at.set(tempAt); // update at position
         } else {
-            // 7) Handle sliding when hitting a wall
+            // handle sliding when hitting a wall
 
-            // (a) Try moving only along X (keeping Y and Z unchanged)
+            // try moving only along X (keeping Y and Z unchanged)
             let xOnlyEye = new Vector3(oldEye.elements);
             let xOnlyAt = new Vector3(oldAt.elements);
-            xOnlyEye.elements[0] += direction.elements[0];
-            xOnlyAt.elements[0] += direction.elements[0];
-            let xCollision = this.checkCollision(xOnlyEye.elements[0], xOnlyEye.elements[2], COLLISION_RADIUS).hitWall;
+            xOnlyEye.elements[0] += direction.elements[0]; // move in x direction
+            xOnlyAt.elements[0] += direction.elements[0]; // move at in x direction
+            let xCollision = this.checkCollision(xOnlyEye.elements[0], xOnlyEye.elements[2], COLLISION_RADIUS).hitWall; // check for collision
 
-            // (b) Try moving only along Z (keeping Y and X unchanged)
+            // try moving only along Z (keeping Y and X unchanged)
             let zOnlyEye = new Vector3(oldEye.elements);
             let zOnlyAt = new Vector3(oldAt.elements);
-            zOnlyEye.elements[2] += direction.elements[2];
-            zOnlyAt.elements[2] += direction.elements[2];
-            let zCollision = this.checkCollision(zOnlyEye.elements[0], zOnlyEye.elements[2], COLLISION_RADIUS).hitWall;
+            zOnlyEye.elements[2] += direction.elements[2]; // move in z direction
+            zOnlyAt.elements[2] += direction.elements[2]; // move at in z direction
+            let zCollision = this.checkCollision(zOnlyEye.elements[0], zOnlyEye.elements[2], COLLISION_RADIUS).hitWall; // check for collision
 
-            // 8) Decide movement based on collisions
+            // decide movement based on collisions
             if (!xCollision && zCollision) {
-                this.eye.set(xOnlyEye);
-                this.at.set(xOnlyAt);
+                this.eye.set(xOnlyEye); // move along x if no collision
+                this.at.set(xOnlyAt); // update at position
             } else if (xCollision && !zCollision) {
-                this.eye.set(zOnlyEye);
-                this.at.set(zOnlyAt);
+                this.eye.set(zOnlyEye); // move along z if no collision
+                this.at.set(zOnlyAt); // update at position
             }
         }
 
-        // 9) Finally, update the view
+        // finally, update the view matrix
         this.updateViewMatrix();
     }
 
-
-
-    // panLeft()
+    // pan left
     panLeft(alpha = 5) {
-        // f = at - eye
+        // calculate forward vector
         let f = new Vector3();
         f.set(this.at);
-        f.sub(this.eye);
+        f.sub(this.eye); // calculate forward direction
 
-        // Create rotation matrix
+        // create rotation matrix
         let rotationMatrix = new Matrix4();
         rotationMatrix.setRotate(alpha,
             this.up.elements[0],
@@ -386,12 +377,12 @@ class Camera {
             this.up.elements[2]
         );
 
-        // Multiply rotation by forward vector => f'
+        // multiply rotation by forward vector to get new forward vector
         let f_prime = rotationMatrix.multiplyVector3(f);
 
-        // at = eye + f_prime
+        // update the at position
         this.at.set(this.eye);
-        this.at.add(f_prime);
+        this.at.add(f_prime); // move at position
         viewMatrix.setLookAt(
             this.eye.elements[0], this.eye.elements[1], this.eye.elements[2],
             this.at.elements[0], this.at.elements[1], this.at.elements[2],
@@ -399,14 +390,14 @@ class Camera {
         );
     }
 
-    // panRight()
+    // pan right
     panRight(alpha = 5) {
-        // f = at - eye
+        // calculate forward vector
         let f = new Vector3();
         f.set(this.at);
-        f.sub(this.eye);
+        f.sub(this.eye); // calculate forward direction
 
-        // Create rotation matrix (rotate by -alpha)
+        // create rotation matrix (rotate by -alpha)
         let rotationMatrix = new Matrix4();
         rotationMatrix.setRotate(-alpha,
             this.up.elements[0],
@@ -414,12 +405,12 @@ class Camera {
             this.up.elements[2]
         );
 
-        // Multiply rotation by forward vector => f'
+        // multiply rotation by forward vector to get new forward vector
         let f_prime = rotationMatrix.multiplyVector3(f);
 
-        // at = eye + f_prime
+        // update the at position
         this.at.set(this.eye);
-        this.at.add(f_prime);
+        this.at.add(f_prime); // move at position
         viewMatrix.setLookAt(
             this.eye.elements[0], this.eye.elements[1], this.eye.elements[2],
             this.at.elements[0], this.at.elements[1], this.at.elements[2],
@@ -427,17 +418,18 @@ class Camera {
         );
     }
 
+    // pitch up
     pitchUp(angle = 5) {
-        // forward = at - eye
+        // calculate forward vector
         let forward = new Vector3();
         forward.set(this.at);
-        forward.sub(this.eye);
+        forward.sub(this.eye); // calculate forward direction
 
-        // side = forward x up  (right-hand rule)
+        // calculate side vector using cross product
         let side = Vector3.cross(forward, this.up);
-        side.normalize();
+        side.normalize(); // normalize the side vector
 
-        // Create a rotation matrix that rotates by `angle` around `side` axis
+        // create a rotation matrix that rotates by `angle` around `side` axis
         let rotationMatrix = new Matrix4();
         rotationMatrix.setRotate(angle,
             side.elements[0],
@@ -445,40 +437,40 @@ class Camera {
             side.elements[2]
         );
 
-        // Rotate forward vector
+        // rotate forward vector
         let f_prime = rotationMatrix.multiplyVector3(forward);
 
-        // Now update camera at = eye + new forward
+        // update the at position
         this.at.set(this.eye);
-        this.at.add(f_prime);
+        this.at.add(f_prime); // move at position
 
-        // this.up = new Vector3([0, 1, 0]);
-
+        // update the view matrix
         this.updateViewMatrix();
     }
 
+    // pitch down
     pitchDown(angle = 5) {
-        // forward = at - eye
+        // calculate forward vector
         let forward = new Vector3();
         forward.set(this.at);
-        forward.sub(this.eye);
+        forward.sub(this.eye); // calculate forward direction
 
-        // side = forward x up
+        // calculate side vector using cross product
         let side = Vector3.cross(forward, this.up);
-        side.normalize();
+        side.normalize(); // normalize the side vector
 
-        // Rotate by -angle around side
+        // rotate by -angle around side
         let rotationMatrix = new Matrix4();
         rotationMatrix.setRotate(-angle, side.elements[0], side.elements[1], side.elements[2]);
 
-        // Apply rotation to forward
+        // apply rotation to forward vector
         let f_prime = rotationMatrix.multiplyVector3(forward);
 
-        // at = eye + new forward
+        // update the at position
         this.at.set(this.eye);
-        this.at.add(f_prime);
+        this.at.add(f_prime); // move at position
 
-        // final update
+        // update the view matrix
         this.updateViewMatrix();
     }
 }
